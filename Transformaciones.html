@@ -32,7 +32,11 @@
 		var clearKey = false;
 		var homeKey = false;
 		var endKey = false;
+		var R_Key = false;
 		var object, transf = 'T';
+		var angulo = Math.PI/12; // 15°
+		var x = Math.cos(angulo);
+		var y = Math.sin(angulo);
 		init();
 		animate();
 	
@@ -67,7 +71,7 @@
 					case 40: // TRASLADAR EN DIRECCION NEGATIVA
 						downArrow = true;
 						break;
-					case 12:  // IR AL ORIGEN DE LAS COORDENADAS
+					case 12:  // IR AL ORIGEN DE LAS COORDENADAS NumPad5(clear)
 						clearKey = true;
 						break;
 					case 69:  // ACTIVAR ESCALADO
@@ -76,6 +80,7 @@
 						break;
 					case 82:  // ACTIVAR ROTACION
 						transf = 'R';
+						R_Key = true;
 						document.getElementById("transf").innerHTML = "ROTACIÓN";
 						break;
 					case 84:  // ACTIVAR TRASLACION
@@ -92,6 +97,7 @@
 				clearKey = false;
 				homeKey = false;
 				endKey = false;
+				R_Key=false;
 			};	  	
 			
 			document.addEventListener( 'keydown', onKeyDown, false );
@@ -176,27 +182,23 @@
 		if(transf == 'E') {
 			tx=1; ty=1; tz=1;
 		}
-		if(upArrow) {
-			ty = (transf == 'T' ? 1 : transf == 'E' ? 1.1 : transf == 'R' ? 1 : 0);
+		if(upArrow) {	
+			ty= (transf == 'T' ? 1 : transf=='E' ? 1.1: transf=='R'? angulo:0);
 		}
 		if(downArrow) {
-			ty = (transf == 'T' ? -1 : transf == 'E' ? 10/11 : transf == 'R' ? 1 : 0);
+			ty = (transf == 'T' ? -1 : transf == 'E' ? 10/11 : transf == 'R' ?  -angulo : 0);
 		}
 		if(leftArrow) {
-            tx=(transf == 'T' ? 1 : transf == 'E' ? 1.1 : transf == 'R' ? 1 : 0);
-			
+			tx=(transf == 'T' ? -1 : transf == 'E' ? 10/11 : transf == 'R' ?  -angulo : 0);
 		}
 		if(rightArrow) {
-            tx=(transf == 'T' ? -1 : transf == 'E' ? 10/11 : transf == 'R' ? 1 : 0);
-			
+			tx=(transf == 'T' ? 1 : transf=='E' ? 1.1: transf=='R'? angulo:0);
 		}
 		if(homeKey) {
-            tz=(transf == 'T' ? 1 : transf == 'E' ? 1.1 : transf == 'R' ? 1 : 0);
-			
+			tz=(transf == 'T' ? 1 : transf=='E' ? 1.1: transf=='R'? angulo:0);
 		}
 		if(endKey) {
-            tz=(transf == 'T' ? -1 : transf == 'E' ? 10/11 : transf == 'R' ? 1 : 0);
-			
+			tz=(transf == 'T' ? -1 : transf == 'E' ? 10/11 : transf == 'R' ?  -angulo : 0);
 		}
 		if(clearKey) {
 			tx=-object.position.x;
@@ -219,13 +221,24 @@
 					0, 0, 0, 1);
 
 		if (transf == 'R')
-			t.set( 	1, 0, 0, tx,
-					0, 1, 0, ty, 
-					0, 0, 1, tz,
+		if (leftArrow)
+			t.set( 	1, 0, 0, 0,   
+					0, x, -y, 0, 
+					0, y,x, 0,
 					0, 0, 0, 1	);
-
-		object.applyMatrix(t);				//Aplicar la matriz de transformación al objeto				
-		object.elementsNeedUpdate = true;	//Avisar que la matriz del objeto ha cambiado
+		else 
+				if (upArrow)
+					t.set( 	x, 0, y, 0,
+							0, 1, 0, 0, 
+							-y, 0,x, 0,
+							0, 0, 0, 1	);
+		else if (homeKey)
+					t.set( 	x, -y, 0, 0,
+							y, x, 0, 0, 
+							0, 0,1, 0,
+							0, 0, 0, 1	);			
+		object.applyMatrix(t);								
+		object.elementsNeedUpdate = true;	
         camera.lookAt( 0, 0, 0 );
         renderer.render( scene, camera );
     }
